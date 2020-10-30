@@ -6,13 +6,13 @@
 
 Term: Fall 2020
 
-+ Team ##
++ Team 1
 + Team members
-	+ team member 1
-	+ team member 2
-	+ team member 3
-	+ team member 4
-	+ team member 5
+	+ team member 1 Kristen Akey
+	+ team member 2 Levi Lee
+	+ team member 3 Yiran Lin
+	+ team member 4 Hanyi Yang
+	+ team member 5 Wen Yin
 
 + Project summary: In this project, we created a classification engine for facial emotion recognition. 
 	

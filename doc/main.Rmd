@@ -45,6 +45,28 @@ if(!require("WeightedROC")){
   install.packages("WeightedROC")
 }
 
+if(!require("nnet")){
+  install.packages("nnet")
+}
+
+if(!require("pbapply")){
+  install.packages("pbapply")
+}
+
+if(!require("keras")){
+  install.packages("keras")
+}
+
+if(!require("dplyr")){
+  install.packages("dplyr")
+}
+
+if(!require("devtools")){
+  install.packages("devtools")
+}
+
+
+
 library(R.matlab)
 library(readxl)
 library(dplyr)
@@ -53,6 +75,9 @@ library(ggplot2)
 library(caret)
 library(glmnet)
 library(WeightedROC)
+library(nnet)
+
+
 ```
 
 ### Step 0 set work directories
@@ -65,7 +90,8 @@ set.seed(2020)
 
 Provide directories for training images. Training images and Training fiducial points will be in different subfolders. 
 ```{r}
-train_dir <- "../data/train_set/" # This will be modified for different data sets.
+# train_dir <- "../data/train_set/" # This will be modified for different data sets.
+train_dir <- "../../train_set/"
 train_image_dir <- paste(train_dir, "images/", sep="")
 train_pt_dir <- paste(train_dir,  "points/", sep="")
 train_label_path <- paste(train_dir, "label.csv", sep="") 
@@ -258,6 +284,7 @@ if (sample.reweight){
 save(fit_train, file="../output/fit_train.RData")
 ```
 
+
 ### Step 5: Run test on test images
 ```{r test}
 tm_test = NA
@@ -290,6 +317,43 @@ cat("The AUC of model:", model_labels[which.min(res_cv$mean_error)], "is", auc, 
 
 ```
 
+
+# Random Forest Model
+
+* fit random forest model using best parameters
+```{r}
+start=Sys.time()
+rf_classifier = randomForest(label ~ ., data=dat_train, ntree=100, mtry=2000)
+end=Sys.time()
+rftraintime=end-start
+
+start=Sys.time()
+preds=predict(rf_classifier,dat_test[,-6007],type="class")
+end=Sys.time()
+rftesttime=end-start
+
+```
+
+* Random Forest test accuracy
+
+```{r}
+#raw accuracy
+rftestacc=sum(preds==dat_test$label)/length(dat_test$label)
+predprob=predict(rf_classifier,dat_test[,-6007],type="prob")
+
+#weighted accuracy
+rfaccuw <- sum(weight_test * (preds == dat_test$label)) / sum(weight_test)
+rftpr.fpr <- WeightedROC(predprob[,2], dat_test$label, weight_test)
+rfauc <- WeightedAUC(rftpr.fpr)
+
+cat("The unweighted accuracy of the random forest model is ", rftestacc*100, "%.\n")
+cat("The weighted accuracy of the random forest model is ", rfaccuw*100, "%.\n")
+cat("The AUC of model is", rfauc, ".\n")
+
+```
+
+
+
 ### Summarize Running Time
 Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
 ```{r running_time}
@@ -297,10 +361,20 @@ cat("Time for constructing training features=", tm_feature_train[1], "s \n")
 cat("Time for constructing testing features=", tm_feature_test[1], "s \n")
 cat("Time for training model=", tm_train[1], "s \n") 
 cat("Time for testing model=", tm_test[1], "s \n")
+
+cat("Time for training random forest model=", rftraintime, "min \n") 
+cat("Time for testing random forest model=", rftesttime, "s \n")
 ```
 
 ###Reference
 - Du, S., Tao, Y., & Martinez, A. M. (2014). Compound facial expressions of emotion. Proceedings of the National Academy of Sciences, 111(15), E1454-E1462.
+
+
+
+
+
+
+
 
 
 

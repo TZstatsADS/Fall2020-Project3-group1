@@ -10,7 +10,7 @@ In your final repo, there should be an R markdown file that organizes **all comp
 
 This file is currently a template for running evaluation experiments. You should update it according to your codes but following precisely the same structure. 
 
-```{r message=FALSE, warning = FALSE}
+```{r message=FALSE, warning = FALSE, echo = FALSE}
 if(!require("EBImage")){
   install.packages("BiocManager")
   BiocManager::install("EBImage")
@@ -72,6 +72,9 @@ library(xgboost)
 
 
 
+
+
+
 ```
 
 ### Step 0 set work directories
@@ -123,12 +126,12 @@ In this chunk, we have a set of controls for the evaluation experiments.
 K <- 5  # number of CV folds
 
 run.fudicial.list <- FALSE
-run.feature.train <- TRUE # process features for training set
-run.feature.test <- TRUE # process features for test set
+run.feature.train <- FALSE # process features for training set
+run.feature.test <- FALSE # process features for test set
 sample.reweight <- TRUE # run sample reweighting in model training
 
 run.cv.gbm <- FALSE # run cross-validation on the training set for gbm 
-run.train.gbm <- TRUE # run evaluation on entire train set
+run.train.gbm <- FALSE # run evaluation on entire train set
 run.test.gbm <- TRUE # run evaluation on an independent test set
 
 
@@ -228,7 +231,7 @@ source("../lib/feature.R")
 tm_feature_train <- NA
 if(run.feature.train){
   tm_feature_train <- system.time(dat_train <- feature(fiducial_pt_list, train_idx))
-  save(dat_train, file="../output/feature_train.RData")
+  save(dat_train, tm_feature_train, file="../output/feature_train.RData")
 }else{
   load(file="../output/feature_train.RData")
 }
@@ -236,11 +239,15 @@ if(run.feature.train){
 tm_feature_test <- NA
 if(run.feature.test){
   tm_feature_test <- system.time(dat_test <- feature(fiducial_pt_list, test_idx))
-  save(dat_test, file="../output/feature_test.RData")
+  save(dat_test, tm_feature_test, file="../output/feature_test.RData")
 }else{
   load(file="../output/feature_test.RData")
 }
 ```
+
+\newpage
+
+## Gradient Boosted Trees (gbm model) (Baseline Model)
 
 ### Step 4: Train a classification model with training features and responses
 Call the train model and test model from library. 
@@ -257,15 +264,13 @@ Call the train model and test model from library.
 
 + In this Starter Code, we use logistic regression with LASSO penalty to do classification. 
 
-```{r loadlib}
+```{r loadlib_gbm}
 source("../lib/train_gbm.R") 
 source("../lib/test_gbm.R")
 ```
 
 #### Model selection with cross-validation
 * Do model selection by choosing among different values of training model parameters.
-
-##### Gradient Boosted Trees (gbm model) (Baseline Model)
 
 ```{r runcv_gbm, message = FALSE}
 source("../lib/cross_validation_gbm.R")
@@ -364,54 +369,98 @@ if (run.train.gbm) {
   }
   
   if (sample.reweight){
-    tm_train_gbm <- system.time(fit_train <- train(feature_train, label_train, w = weight_train, 
-                                               num_trees = par_best_gbm_n.trees, shrink = par_best_gbm_shrinkage))
+    tm_train_gbm <- system.time(fit_train_gbm <- train(feature_train, label_train, w = weight_train, 
+                                                       num_trees = par_best_gbm_n.trees, 
+                                                       shrink = par_best_gbm_shrinkage))
   } else {
-    tm_train_gbm <- system.time(fit_train <- train(feature_train, label_train, w = NULL, 
-                                               num_trees = par_best_gbm_n.trees, shrink = par_best_gbm_shrinkage))
+    tm_train_gbm <- system.time(fit_train_gbm <- train(feature_train, label_train, w = NULL, 
+                                                       num_trees = par_best_gbm_n.trees,
+                                                       shrink = par_best_gbm_shrinkage))
   }
-  save(fit_train, file="../output/fit_train_gbm.RData")
+  save(fit_train_gbm, tm_train_gbm, file="../output/fit_train_gbm.RData")
   
 } else {
   load(file="../output/fit_train_gbm.RData")
 }
 ```
 
+### Step 5: Run test on test images
 
-##### Principal Components Analysis (PCA) + Support Vector Machines (SVMs)
+```{r test_gbm, message = FALSE}
+tm_test_gbm = NA
+feature_test <- as.matrix(dat_test[, -6007])
+label_test <- as.integer(dat_test$label)
 
-```{r runcv_pca_svm}
+if(run.test.gbm){
+  load(file="../output/fit_train_gbm.RData")
+  tm_test_gbm <- system.time({prob_pred <- test(fit_train_gbm, feature_test, pred.type = 'response'); 
+                              label_pred <- ifelse(prob_pred >= 0.5, 1, 0)})
+}
+```
+
+* Evaluation
+```{r, message = FALSE}
+## reweight the test data to represent a balanced label distribution
+
+weight_test <- rep(NA, length(label_test))
+for (v in unique(label_test)){
+  weight_test[label_test == v] = 0.5 * length(label_test) / length(label_test[label_test == v])
+}
+
+# convert the original 1-2 class into numeric 0s and 1s
+label_test <- ifelse(label_test == 2, 0, 1)
+
+accu <- sum(weight_test * (label_pred == label_test)) / sum(weight_test)
+tpr.fpr <- WeightedROC(prob_pred, label_test, weight_test)
+auc <- WeightedAUC(tpr.fpr)
+```
+
+```{r, echo = FALSE}
+cat("The accuracy of the gbm model (", "shinkage = ", par_best_gbm_shrinkage, ", n.trees = ", par_best_gbm_n.trees, ") is ", accu*100, "%.\n", sep = "")
+cat("The AUC of the gbm model (", "shinkage = ", par_best_gbm_shrinkage, ", n.trees = ", par_best_gbm_n.trees, ") is ", auc, ".\n", sep = "")
+```
+
+
+#### Summarize Running Time
+
+Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
+
+
+```{r running_time_gbm, echo = FALSE}
+cat("Time for constructing training features = ", tm_feature_train[1], " seconds \n", sep = "")
+cat("Time for constructing testing features = ", tm_feature_test[1], " seconds \n", sep = "")
+
+cat("Time for training gbm model = ", tm_train_gbm[1], " seconds \n", sep = "") 
+cat("Time for testing gbm model = ", tm_test_gbm[1], " seconds \n" , sep = "")
+```
+
+
+\newpage
+
+
+## xgboost Model (Proposed Model) 
+
+### Step 4: Train a classification model with training features and responses
+Call the train model and test model from library. 
+
+`train.R` and `test.R` should be wrappers for all your model training steps and your classification/prediction steps. 
+
++ `train.R`
+  + Input: a data frame containing features and labels and a parameter list.
+  + Output:a trained model
++ `test.R`
+  + Input: the fitted classification model using training data and processed features from testing images 
+  + Input: an R object that contains a trained classifier.
+  + Output: training model specification
+
++ In this Starter Code, we use logistic regression with LASSO penalty to do classification. 
+
+```{r loadlib_xgboost}
 
 ```
 
-*Visualize cross-validation results. 
-```{r cv_vis_pcasvm}
-
-```
-
-##### Convolutional Neurual Networks 
-
-```{r runcv_cnn}
-
-```
-
-*Visualize cross-validation results. 
-```{r cv_vis_cnn}
-
-```
-
-##### Random Forests
-
-```{r runcv_rf}
-
-```
-
-*Visualize cross-validation results. 
-```{r cv_vis_rf}
-
-```
-
-##### xgboost Model (Proposed Model) 
+#### Model selection with cross-validation
+* Do model selection by choosing among different values of training model parameters.
 
 ```{r runcv_xgboost}
 
@@ -436,49 +485,11 @@ if (run.train.gbm) {
 
 ### Step 5: Run test on test images
 
-##### Gradient Boosted Trees (gbm) (Baseline Model)
-
-```{r test_gbm, message = FALSE}
-tm_test_gbm = NA
-feature_test <- as.matrix(dat_test[, -6007])
-label_test <- as.integer(dat_test$label)
-
-if(run.test.gbm){
-  load(file="../output/fit_train_gbm.RData")
-  tm_test_gbm <- system.time({prob_pred <- test(fit_train, feature_test, pred.type = 'response'); 
-                              label_pred <- ifelse(prob_pred >= 0.5, 1, 0)})
-}
-```
-
-* evaluation
-```{r, message = FALSE}
-## reweight the test data to represent a balanced label distribution
-
-weight_test <- rep(NA, length(label_test))
-for (v in unique(label_test)){
-  weight_test[label_test == v] = 0.5 * length(label_test) / length(label_test[label_test == v])
-}
-
-# convert the original 1-2 class into numeric 0s and 1s
-label_test <- ifelse(label_test == 2, 0, 1)
-
-accu <- sum(weight_test * (label_pred == label_test)) / sum(weight_test)
-tpr.fpr <- WeightedROC(prob_pred, label_test, weight_test)
-auc <- WeightedAUC(tpr.fpr)
-```
-
-```{r, echo = FALSE}
-cat("The accuracy of the gbm model (", "shinkage = ", par_best_gbm_shrinkage, ", n.trees = ", par_best_gbm_n.trees, ") is ", accu*100, "%.\n", sep = "")
-cat("The AUC of the gbm model (", "shinkage = ", par_best_gbm_shrinkage, ", n.trees = ", par_best_gbm_n.trees, ") is ", auc, ".\n", sep = "")
-```
-
-##### xgboost Model (Proposed Model) 
-
 ```{r}
 
 ```
 
-* evaluation
+* Evaluation
 
 ```{r}
 
@@ -489,30 +500,236 @@ cat("The AUC of the gbm model (", "shinkage = ", par_best_gbm_shrinkage, ", n.tr
 
 ```
 
-### Summarize Running Time
+#### Summarize Running Time
 
 Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
 
-```{r running_time, echo = FALSE}
-cat("Time for constructing training features = ", tm_feature_train[1], " seconds \n", sep = "")
-cat("Time for constructing testing features = ", tm_feature_test[1], " seconds \n", sep = "")
-
-cat("Time for training gbm model = ", tm_train_gbm[1], " seconds \n", sep = "") 
-cat("Time for testing gbm model = ", tm_test_gbm[1], " seconds \n" , sep = "")
-
-
-### add run times for xgboost model here
-
-
-
-
-
-
-
+```{r running_time_xgboost, echo = FALSE}
 
 ```
 
-### Reference
+
+\newpage
+
+## Other Models 
+
+## Principal Components Analysis (PCA) + Support Vector Machines (SVMs)
+
+### Step 4: Train a classification model with training features and responses
+Call the train model and test model from library. 
+
+`train.R` and `test.R` should be wrappers for all your model training steps and your classification/prediction steps. 
+
++ `train.R`
+  + Input: a data frame containing features and labels and a parameter list.
+  + Output:a trained model
++ `test.R`
+  + Input: the fitted classification model using training data and processed features from testing images 
+  + Input: an R object that contains a trained classifier.
+  + Output: training model specification
+
++ In this Starter Code, we use logistic regression with LASSO penalty to do classification. 
+
+```{r loadlib_pca_svm}
+
+```
+
+#### Model selection with cross-validation
+* Do model selection by choosing among different values of training model parameters.
+
+```{r runcv_pca_svm}
+
+```
+
+*Visualize cross-validation results. 
+```{r cv_vis_pcasvm}
+
+```
+
+* Choose the "best" parameter value
+
+```{r best_model_pcasvm}
+
+```
+
+* Train the model with the entire training set using the selected model (model parameter) via cross-validation.
+
+```{r final_train_pcasvm}
+
+```
+
+### Step 5: Run test on test images
+
+```{r}
+
+```
+
+* Evaluation
+
+```{r}
+
+```
+
+
+```{r, echo = FALSE}
+
+```
+
+#### Summarize Running Time
+
+Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
+
+```{r running_time_pcasvm, echo = FALSE}
+
+```
+
+\newpage
+
+## Convolutional Neurual Networks 
+
+### Step 4: Train a classification model with training features and responses
+Call the train model and test model from library. 
+
+`train.R` and `test.R` should be wrappers for all your model training steps and your classification/prediction steps. 
+
++ `train.R`
+  + Input: a data frame containing features and labels and a parameter list.
+  + Output:a trained model
++ `test.R`
+  + Input: the fitted classification model using training data and processed features from testing images 
+  + Input: an R object that contains a trained classifier.
+  + Output: training model specification
+
++ In this Starter Code, we use logistic regression with LASSO penalty to do classification. 
+
+```{r loadlib_cnn}
+
+```
+
+#### Model selection with cross-validation
+* Do model selection by choosing among different values of training model parameters.
+
+```{r runcv_cnn}
+
+```
+
+*Visualize cross-validation results. 
+```{r cv_vis_cnn}
+
+```
+
+* Choose the "best" parameter value
+
+```{r best_model_cnn}
+
+```
+
+* Train the model with the entire training set using the selected model (model parameter) via cross-validation.
+
+```{r final_train_cnn}
+
+```
+
+### Step 5: Run test on test images
+
+```{r}
+
+```
+
+* Evaluation
+
+```{r}
+
+```
+
+
+```{r, echo = FALSE}
+
+```
+
+#### Summarize Running Time
+
+Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
+
+```{r running_time_cnn, echo = FALSE}
+
+```
+
+\newpage
+
+## Random Forests
+
+### Step 4: Train a classification model with training features and responses
+Call the train model and test model from library. 
+
+`train.R` and `test.R` should be wrappers for all your model training steps and your classification/prediction steps. 
+
++ `train.R`
+  + Input: a data frame containing features and labels and a parameter list.
+  + Output:a trained model
++ `test.R`
+  + Input: the fitted classification model using training data and processed features from testing images 
+  + Input: an R object that contains a trained classifier.
+  + Output: training model specification
+
++ In this Starter Code, we use logistic regression with LASSO penalty to do classification. 
+
+```{r loadlib_rf}
+
+```
+
+#### Model selection with cross-validation
+* Do model selection by choosing among different values of training model parameters.
+
+```{r runcv_rf}
+
+```
+
+*Visualize cross-validation results. 
+```{r cv_vis_rf}
+
+```
+
+* Choose the "best" parameter value
+
+```{r best_model_rf}
+
+```
+
+* Train the model with the entire training set using the selected model (model parameter) via cross-validation.
+
+```{r final_train_rf}
+
+```
+
+### Step 5: Run test on test images
+
+```{r}
+
+```
+
+#### Evaluation
+
+```{r}
+
+```
+
+
+```{r, echo = FALSE}
+
+```
+
+#### Summarize Running Time
+
+Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
+
+```{r running_time_rf, echo = FALSE}
+
+```
+
+\newpage
+
+## Reference(s)
 - Du, S., Tao, Y., & Martinez, A. M. (2014). Compound facial expressions of emotion. Proceedings of the National Academy of Sciences, 111(15), E1454-E1462.
 
 

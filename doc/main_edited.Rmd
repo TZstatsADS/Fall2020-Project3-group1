@@ -4,7 +4,18 @@ author: "Group 1: Kristen Akey, Levi Lee, Yiran Lin, Hanyi Yang, Wen Yin"
 output:
   pdf_document: default
   html_notebook: default
+editor_options: 
+  chunk_output_type: console
 ---
+
+# Introduction / Objective 
+
+# Baseline Model/Proposed Model
+
+# Results
+
+# Analysis 
+
 
 In your final repo, there should be an R markdown file that organizes **all computational steps** for evaluating your proposed Facial Expression Recognition framework. 
 
@@ -54,6 +65,11 @@ if(!require("xgboost")){
 }
 
 
+if(!require("randomForest")){
+  install.packages("randomForest")
+}
+
+
 library(R.matlab)
 library(readxl)
 library(dplyr)
@@ -65,6 +81,7 @@ library(WeightedROC)
 
 library(gbm)
 library(xgboost)
+library(randomForest)
 
 # install other packages as needed using the format above 
 
@@ -81,7 +98,7 @@ library(xgboost)
 ```{r wkdir, eval=FALSE}
 
 set.seed(2020)
-# setwd("~/GitHub/Fall2020-Project3-group1/doc")
+setwd("~/GitHub/Fall2020-Project3-group1/doc")
 
 
 # change the working directory as needed
@@ -96,13 +113,12 @@ Provide directories for training images. Training images and Training fiducial p
 
 ```{r}
 # change the directory of the data to where it's stored in your local drive as needed
-train_dir <- "../data/train_set/" # This will be modified for different data sets.
+
+# train_dir <- "../data/train_set/" # This will be modified for different data sets.
+
+train_dir <- "~/train_set/"
 
 
-
-
-
-# train_dir <- "~/train_set/"
 train_image_dir <- paste(train_dir, "images/", sep="")
 train_pt_dir <- paste(train_dir,  "points/", sep="")
 train_label_path <- paste(train_dir, "label.csv", sep="") 
@@ -163,18 +179,22 @@ hyper_grid_xgboost <- expand.grid(
   eta = c(0.01, 0.05, 0.1, 0.2, 0.3),
   lambda = c(0.001, 0.005, 0.010, 0.050, 0.100),
   gamma = c(0, 5),
-  nrounds = c(100, 200, 600)
+  nrounds = c(600, 1200, 1800)
 )
 
 
+# random forest model 
+
+
+
+
+
+
+
+
+
+
 # add more hyperparameters for each model as needed 
-
-
-
-
-
-
-
 
 ```
 
@@ -250,14 +270,14 @@ if(run.feature.test){
 ## Gradient Boosted Trees (gbm model) (Baseline Model)
 
 ### Step 4: Train a classification model with training features and responses
-Call the train model and test model from library. 
+Call the train_gbm model and test_gbm model from library. 
 
-`train.R` and `test.R` should be wrappers for all your model training steps and your classification/prediction steps. 
+`train_gbm.R` and `test_gbm.R` should be wrappers for all your model training steps and your classification/prediction steps. 
 
-+ `train.R`
++ `train_gbm.R`
   + Input: a data frame containing features and labels and a parameter list.
   + Output:a trained model
-+ `test.R`
++ `test_gbm.R`
   + Input: the fitted classification model using training data and processed features from testing images 
   + Input: an R object that contains a trained classifier.
   + Output: training model specification
@@ -266,13 +286,13 @@ Call the train model and test model from library.
 ```{r loadlib_gbm}
 source("../lib/train_gbm.R") 
 source("../lib/test_gbm.R")
+source("../lib/cross_validation_gbm.R")
 ```
 
 #### Model selection with cross-validation
 * Do model selection by choosing among different values of training model parameters.
 
 ```{r runcv_gbm, message = FALSE}
-source("../lib/cross_validation_gbm.R")
 feature_train = as.matrix(dat_train[, -6007])
 label_train = as.integer(dat_train$label) 
 
@@ -299,7 +319,9 @@ colnames(res_cv_gbm) <- c("mean_error", "sd_error", "mean_AUC", "sd_AUC")
 
 gbm_cv_results = data.frame(hyper_grid_gbm, res_cv_gbm)
 
-gbm_cv_results
+# a subset of cross-validated gbm models (15 total)
+# see appendix for full table
+gbm_cv_results[gbm_cv_results$n.trees == 1200, ]
 
 # Mean Error
 ggplot(gbm_cv_results, aes(as.factor(shrinkage), as.factor(n.trees), fill = mean_error)) + 
@@ -388,9 +410,10 @@ if (run.train.gbm) {
 ### Step 5: Run test on test images
 
 ```{r test_gbm, message = FALSE}
-tm_test_gbm = NA
 feature_test <- as.matrix(dat_test[, -6007])
 label_test <- as.integer(dat_test$label)
+
+tm_test_gbm = NA
 
 if(run.test.gbm){
   load(file="../output/fit_train_gbm.RData")
@@ -457,15 +480,18 @@ Call the train model and test model from library.
 
 
 ```{r loadlib_xgboost}
-source("../lib/cross_validation_xgboost.R") 
 source("../lib/train_xgboost.R") 
 source("../lib/test_xgboost.R") 
+source("../lib/cross_validation_xgboost.R") 
 ```
 
 #### Model selection with cross-validation
 * Do model selection by choosing among different values of training model parameters.
 
 ```{r runcv_xgboost}
+feature_train = as.matrix(dat_train[, -6007])
+label_train = as.integer(dat_train$label) 
+
 if(run.cv.xgboost){
   res_cv <- matrix(0, nrow = nrow(hyper_grid_xgboost), ncol = 4)
   for (i in 1:nrow(hyper_grid_xgboost)){
@@ -490,7 +516,9 @@ colnames(res_cv_xgboost) <- c("mean_error", "sd_error", "mean_AUC", "sd_AUC")
 
 res_cv_xgboost_cv_results = data.frame(hyper_grid_xgboost, res_cv_xgboost)
 
-res_cv_xgboost_cv_results
+# a subset of cross-validated xgboost models (150 total)
+# see appendix for full table
+res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 1200 & res_cv_xgboost_cv_results$gamma == 0 & res_cv_xgboost_cv_results$lambda == 0.05, ]
 
 # Mean Error
 ggplot(res_cv_xgboost_cv_results, aes(as.factor(nrounds), as.factor(eta), fill = mean_error)) + 
@@ -502,20 +530,20 @@ ggplot(res_cv_xgboost_cv_results, aes(as.factor(nrounds), as.factor(eta), fill =
 
 
 # Mean Error
-# nrounds = 100
-ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 100, ],
-       aes(x = as.factor(eta), y = mean_error, 
-           ymin = mean_error - sd_error, ymax = mean_error + sd_error)) + 
-    geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
-# nrounds = 200
-ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 200, ],
-       aes(x = as.factor(eta), y = mean_error, 
-           ymin = mean_error - sd_error, ymax = mean_error + sd_error)) + 
-    geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-
 # nrounds = 600
-ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 600, ],
+ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 600 & res_cv_xgboost_cv_results$gamma == 0 & res_cv_xgboost_cv_results$lambda == 0.05, ],
+       aes(x = as.factor(eta), y = mean_error, 
+           ymin = mean_error - sd_error, ymax = mean_error + sd_error)) + 
+    geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# nrounds = 1200
+ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 1200 & res_cv_xgboost_cv_results$gamma == 0 & res_cv_xgboost_cv_results$lambda == 0.05, ],
+       aes(x = as.factor(eta), y = mean_error, 
+           ymin = mean_error - sd_error, ymax = mean_error + sd_error)) + 
+    geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# nrounds = 1800
+ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 1800 & res_cv_xgboost_cv_results$gamma == 0 & res_cv_xgboost_cv_results$lambda == 0.05, ],
        aes(x = as.factor(eta), y = mean_error, 
            ymin = mean_error - sd_error, ymax = mean_error + sd_error)) + 
     geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -523,19 +551,19 @@ ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 600, ],
 
 # Mean AUC
 # nrounds = 600
-ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 100, ],
+ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 600 & res_cv_xgboost_cv_results$gamma == 0 & res_cv_xgboost_cv_results$lambda == 0.05, ],
        aes(x = as.factor(eta), y = mean_AUC, 
            ymin = mean_AUC - sd_AUC, ymax = mean_AUC + sd_AUC)) + 
     geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 # nrounds = 1200
-ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 200, ],
+ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 1200 & res_cv_xgboost_cv_results$gamma == 0 & res_cv_xgboost_cv_results$lambda == 0.05, ],
        aes(x = as.factor(eta), y = mean_AUC, 
            ymin = mean_AUC - sd_AUC, ymax = mean_AUC + sd_AUC)) + 
     geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 # nrounds = 1800
-ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 600, ],
+ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 1800 & res_cv_xgboost_cv_results$gamma == 0 & res_cv_xgboost_cv_results$lambda == 0.05, ],
        aes(x = as.factor(eta), y = mean_AUC, 
            ymin = mean_AUC - sd_AUC, ymax = mean_AUC + sd_AUC)) + 
     geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -544,8 +572,8 @@ ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 600, ],
 * Choose the "best" parameter value
 
 ```{r best_model_xgboost}
-par_best_res_cv_xgboost_cv_results_ind <- which(
-  res_cv_xgboost_cv_results$mean_AUC == max(res_cv_xgboost_cv_results$mean_AUC))
+par_best_res_cv_xgboost_cv_results_ind <- 
+  which(res_cv_xgboost_cv_results$mean_AUC == max(res_cv_xgboost_cv_results$mean_AUC))
 
 par_best_res_cv_xgboost_cv_results_eta <- res_cv_xgboost_cv_results$eta[par_best_res_cv_xgboost_cv_results_ind]
 par_best_res_cv_xgboost_cv_results_lambda <- res_cv_xgboost_cv_results$lambda[par_best_res_cv_xgboost_cv_results_ind]
@@ -591,6 +619,9 @@ if (run.train.xgboost) {
 ### Step 5: Run test on test images
 
 ```{r}
+feature_test <- as.matrix(dat_test[, -6007])
+label_test <- as.integer(dat_test$label)
+
 tm_test_xgboost= NA
 
 if(run.test.xgboost){
@@ -604,14 +635,11 @@ if(run.test.xgboost){
 
 ```{r}
 ## reweight the test data to represent a balanced label distribution
-
 weight_test <- rep(NA, length(label_test))
 for (v in unique(label_test)){
   weight_test[label_test == v] = 0.5 * length(label_test) / length(label_test[label_test == v])
 }
 
-feature_test <- as.matrix(dat_test[, -6007])
-label_test <- as.integer(dat_test$label)
 # convert the original 1-2 class into numeric 0s and 1s
 label_test <- ifelse(label_test == 2, 0, 1)
 
@@ -716,77 +744,7 @@ Prediction performance matters, so does the running times for constructing featu
 
 ```
 
-\newpage
 
-## Convolutional Neurual Networks 
-
-### Step 4: Train a classification model with training features and responses
-Call the train model and test model from library. 
-
-`train.R` and `test.R` should be wrappers for all your model training steps and your classification/prediction steps. 
-
-+ `train.R`
-  + Input: a data frame containing features and labels and a parameter list.
-  + Output:a trained model
-+ `test.R`
-  + Input: the fitted classification model using training data and processed features from testing images 
-  + Input: an R object that contains a trained classifier.
-  + Output: training model specification
-
-+ In this Starter Code, we use logistic regression with LASSO penalty to do classification. 
-
-```{r loadlib_cnn}
-
-```
-
-#### Model selection with cross-validation
-* Do model selection by choosing among different values of training model parameters.
-
-```{r runcv_cnn}
-
-```
-
-*Visualize cross-validation results. 
-```{r cv_vis_cnn}
-
-```
-
-* Choose the "best" parameter value
-
-```{r best_model_cnn}
-
-```
-
-* Train the model with the entire training set using the selected model (model parameter) via cross-validation.
-
-```{r final_train_cnn}
-
-```
-
-### Step 5: Run test on test images
-
-```{r}
-
-```
-
-* Evaluation
-
-```{r}
-
-```
-
-
-```{r, echo = FALSE}
-
-```
-
-#### Summarize Running Time
-
-Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
-
-```{r running_time_cnn, echo = FALSE}
-
-```
 
 \newpage
 
@@ -807,16 +765,10 @@ Call the train model and test model from library.
 
 + In this Starter Code, we use logistic regression with LASSO penalty to do classification. 
 
-```{r loadlib_rf}
-library(glmnet)
-library(magrittr)
-library(WeightedROC)
-library(glmnet)
-library(ggplot2)
-library(randomForest)
+```{r loadlib_rf, eval = FALSE}
+library(magrittr)    #### NEED TO INSTALL THIS PACKAGE ON TO BUT ONLY IF WE STILL NEED IT
 source("../lib/train.R") 
 source("../lib/test.R")
-
 ```
 
 #### Model selection with cross-validation
@@ -961,14 +913,26 @@ cat("Time for testing random forest model=", rftesttime, "s \n")
 
 ```
 
+
+
+
 \newpage
 
-## Reference(s)
+# Reference(s)
 - Du, S., Tao, Y., & Martinez, A. M. (2014). Compound facial expressions of emotion. Proceedings of the National Academy of Sciences, 111(15), E1454-E1462.
 
 
 
+# Appendix
 
+We provide the full output of the cross-validation table for each model below. 
+
+```{r}
+gbm_cv_results
+
+res_cv_xgboost_cv_results
+
+```
 
 
 

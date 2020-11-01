@@ -3,6 +3,8 @@
 ###########################################################
 
 train <- function(features, labels, w = NULL, eta_val, lmd, gam, nr){
+  labels <- ifelse(labels == 2, 0, 1)
+  
   param <- list(objective = "binary:logistic", eval_metric = "auc")
   
   model <- xgboost(data = feature_train, 

@@ -2,7 +2,7 @@
 ### Cross Validation ###
 ########################
 
-### Author: Chengliang Tang
+### Author: Kristen Akey
 ### Project 3
 
 
@@ -12,7 +12,7 @@ cv.function <- function(features, labels, K, eta_val, lmd, gam,
   ### - features: feature data frame
   ### - labels: label data vector
   ### - K: a number stands for K-fold CV
-  ### - l: tuning parameters 
+  ### - eta_val, lmd, gam, nr: tuning parameters 
   ### - reweight: sample reweighting 
   
   set.seed(2020)
@@ -46,7 +46,6 @@ cv.function <- function(features, labels, K, eta_val, lmd, gam,
     
     ## make predictions
     prob_pred <- test(model_train, feature_test_cv)
-    # label_pred <- as.integer(prob_pred)
     label_pred <- ifelse(prob_pred >= 0.5, 1, 0)
     label_test_cv <- ifelse(label_test_cv == 2, 0, 1)
     cv.error[i] <- 1 - sum(weight_test_cv * (label_pred == label_test_cv)) / sum(weight_test_cv)

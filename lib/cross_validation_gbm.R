@@ -2,7 +2,7 @@
 ### Cross Validation ###
 ########################
 
-### Author: Chengliang Tang
+### Author: Levi Lee
 ### Project 3
 
 
@@ -11,10 +11,8 @@ cv.function <- function(features, labels, K, num_trees, shrink, reweight = FALSE
   ### - features: feature data frame
   ### - labels: label data vector
   ### - K: a number stands for K-fold CV
-  ### - l: tuning parameters 
+  ### - num_trees, shrink: tuning parameters 
   ### - reweight: sample reweighting 
-  
-  # labels <- ifelse(labels == 2, 0, 1)
   
   set.seed(2020)
   n <- dim(features)[1]

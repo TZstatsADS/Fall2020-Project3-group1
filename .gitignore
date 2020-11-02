@@ -7,3 +7,7 @@
 
 data/train_set/
 doc/test.R
+output/fit_train_gbm.RData
+output/fit_train_svm.RData
+output/pcaCalc.RData
+output/res_cv_svm.RData

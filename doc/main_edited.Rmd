@@ -72,7 +72,9 @@ if(!require("randomForest")){
 if(!require("ranger")){
   install.packages("ranger")
 }
-
+if(!require("e1071")){
+  install.packages("e1071")
+}
 
 library(R.matlab)
 library(readxl)
@@ -87,6 +89,8 @@ library(gbm)
 library(xgboost)
 library(randomForest)
 library(ranger)
+
+library(e1071)
 # install other packages as needed using the format above 
 
 
@@ -163,12 +167,10 @@ run.test.rforestw <- TRUE # run evaluation on an independent test set
 # add controls here to make if else statements to either cross-validate, test, train, or to just load saved data
 # for xgboost, we need to also train and test each time we knit to record the time for the model 
 
-
-
-
-
-
-
+run.cv.svm <- FALSE # run cross-validation on the training set for svm
+run.train.svm <- FALSE # run evaluation on entire train set
+run.test.svm <- TRUE # run evaluation on an independent test set
+run.cv.pca <-FALSE # calculate pca
 ```
 
 Using cross-validation or independent test set evaluation, we compare the performance of models with different specifications. In this Starter Code, we tune parameter lambda (the amount of shrinkage) for logistic regression with LASSO penalty.
@@ -198,11 +200,10 @@ hyper_grid_rforest <- expand.grid(
 )
 
 
-
-
-
-
-
+# svm model
+hyper_grid_svm <- expand.grid(
+  nprinciple = c(400,450,500,550,600,650,700,750)
+)
 # add more hyperparameters for each model as needed 
 
 ```
@@ -719,48 +720,122 @@ Call the train model and test model from library.
 + In this Starter Code, we use logistic regression with LASSO penalty to do classification. 
 
 ```{r loadlib_pca_svm}
-
+source("../lib/train_svm.R") 
+source("../lib/test_svm.R")
+source("../lib/cross_validation_svm.R")
 ```
 
 #### Model selection with cross-validation
 * Do model selection by choosing among different values of training model parameters.
 
 ```{r runcv_pca_svm}
-
+feature_train = as.matrix(dat_train[, -6007])
+label_train = as.integer(dat_train$label)
+if(run.cv.pca){
+  pca1 <- prcomp(feature_train)
+  save(pca1,file="../output/pcaCalc.RData")
+}else{
+  load(file="../output/pcaCalc.RData")
+}
+if(run.cv.svm){
+  res_cv_svm <- matrix(0, nrow = length(hyper_grid_svm$nprinciple), ncol = 6)
+  for(i in 1:length(hyper_grid_svm$nprinciple)){
+    cat("Number of principle component = ", hyper_grid_svm$nprinciple[i], "\n")
+    res_cv_svm[i,] <- cv.function(features = feature_train, labels = label_train, K,pca1,
+                              np=hyper_grid_svm$nprinciple[i], reweight = sample.reweight)
+  save(res_cv_svm, file="../output/res_cv_svm.RData")
+  }
+}else{
+  load("../output/res_cv_svm.RData")
+}
 ```
 
 *Visualize cross-validation results. 
 ```{r cv_vis_pcasvm}
+res_cv_svm <- as.data.frame(res_cv_svm) 
+colnames(res_cv_svm) <- c("mean_error", "sd_error", "mean_AUC", "sd_AUC","mean_accu","sd_accu")
+res_cv_svm$k = as.factor(hyper_grid_svm$nprinciple)
+p1 <- res_cv_svm %>%
+  ggplot(aes(x = as.factor(hyper_grid_svm$nprinciple), y = mean_error,
+              ymin = mean_error - sd_error, ymax = mean_error + sd_error)) +
+  geom_crossbar() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
+p2 <- res_cv_svm %>%
+  ggplot(aes(x = as.factor(hyper_grid_svm$nprinciple), y = mean_AUC,
+              ymin = mean_AUC - sd_AUC, ymax = mean_AUC + sd_AUC)) +
+  geom_crossbar() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+p3 <- res_cv_svm %>% 
+  ggplot(aes(x = as.factor(hyper_grid_svm$nprinciple), y = mean_accu,
+              ymin = mean_accu - sd_accu, ymax = mean_accu + sd_accu)) + 
+  geom_crossbar() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  
+print(p1)
+print(p2)
+print(p3)
 ```
 
 * Choose the "best" parameter value
 
 ```{r best_model_pcasvm}
-
+par_best <- hyper_grid_svm$nprinciple[which.max(res_cv_svm$mean_accu)]
 ```
 
 * Train the model with the entire training set using the selected model (model parameter) via cross-validation.
 
 ```{r final_train_pcasvm}
-
+model_labels_svm = paste("PCA principle components", hyper_grid_svm$nprinciple)
+if(run.train.svm){
+  weight_train <- table(label_train)
+  weight_train[1] <- 10
+  weight_train[2] <- 1
+  if(sample.reweight){
+    tm_train_svm <- system.time(fit_train <- train(feature_train, label_train,pca1,par_best,weight_train))
+  }else{
+    tm_train_svm <- system.time(fit_train <- train(feature_train, label_train,pca1,par_best,NULL))
+  }
+  save(fit_train, tm_train_svm,file="../output/fit_train_svm.RData")
+}else{
+  load(file="../output/fit_train_svm.RData")
+}
+model_labels_svm
 ```
 
 ### Step 5: Run test on test images
 
 ```{r}
-
+tm_test_svm = NA
+feature_test <- as.matrix(dat_test[, -6007])
+if(run.test.svm){
+  load(file="../output/fit_train_svm.RData")
+  tm_test_svm <- system.time({ prob_pred <- test(fit_train, feature_test, pca1,par_best)})
+}
 ```
 
 * Evaluation
 
 ```{r}
-
+label_test <- as.integer(dat_test$label)
+weight_test <- rep(NA, length(label_test))
+for (v in unique(label_test)){
+  if (as.integer(v)==2){
+    weight_test[label_test == v] = 1
+  }else{
+    weight_test[label_test == v] = 10
+  }
+}
+finalguess <- as.numeric(prob_pred)
+accu <- sum(finalguess == label_test) / sum(label_test)
+tpr.fpr <- WeightedROC(as.numeric(prob_pred), label_test, weight_test)
 ```
 
 
 ```{r, echo = FALSE}
-
+auc <- WeightedAUC(tpr.fpr)
+cat("The accuracy is: ", accu*100, "%.\n")
+cat("The AUC is", auc, ".\n")
 ```
 
 #### Summarize Running Time
@@ -768,7 +843,10 @@ Call the train model and test model from library.
 Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
 
 ```{r running_time_pcasvm, echo = FALSE}
-
+cat("Time for constructing training features=", tm_feature_train[1], "s \n")
+cat("Time for constructing testing features=", tm_feature_test[1], "s \n")
+cat("Time for training model=", tm_train_svm[1], "s \n") 
+cat("Time for testing model=", tm_test_svm[1], "s \n")
 ```
 
 

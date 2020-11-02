@@ -1182,7 +1182,7 @@ tm_test_rforestw= NA
 
 if(run.test.rforestw){
   load(file="../output/fit_train_xgboost.RData")
-  tm_test_xgboost <- system.time({prob_pred <- predict(fit_train_rforestw, feature_test); 
+  tm_test_rforestw <- system.time({prob_pred <- predict(fit_train_rforestw, feature_test); 
                               label_pred <- prob_pred$predictions})
 }
 ```

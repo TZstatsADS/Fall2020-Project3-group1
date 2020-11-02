@@ -319,9 +319,9 @@ colnames(res_cv_gbm) <- c("mean_error", "sd_error", "mean_AUC", "sd_AUC")
 
 gbm_cv_results = data.frame(hyper_grid_gbm, res_cv_gbm)
 
-# a subset of cross-validated gbm models (15 total)
+# a subset of cross-validated gbm models ordered by mean AUC (15 total)
 # see appendix for full table
-gbm_cv_results[gbm_cv_results$n.trees == 1200, ]
+gbm_cv_results[order(gbm_cv_results$mean_AUC, decreasing = TRUE), ][1:5, ]
 
 # Mean Error
 ggplot(gbm_cv_results, aes(as.factor(shrinkage), as.factor(n.trees), fill = mean_error)) + 
@@ -375,8 +375,11 @@ ggplot(gbm_cv_results[gbm_cv_results$n.trees == 1800, ],
 
 * Choose the "best" parameter value
 
+Due to the presence imbalanced data, we choose to focus out attention on highest mean AUC rather than lowest mean error. However, we notice that the second best model (model 4) is has an mean AUC comparable to that of the best model (model 9) while being much simplier--model 4 has 600 trees while model 9 has 1200--we choose to select the more parsimonious model as our best baseline gbm model. 
+
 ```{r best_model_gbm}
-par_best_gbm_ind <- which(gbm_cv_results$mean_AUC == max(gbm_cv_results$mean_AUC))
+gbm_cv_results[order(gbm_cv_results$mean_AUC, decreasing = TRUE), ][2, ]
+par_best_gbm_ind <- 4
 par_best_gbm_shrinkage <- gbm_cv_results$shrinkage[par_best_gbm_ind]
 par_best_gbm_n.trees <- gbm_cv_results$n.trees[par_best_gbm_ind]
 ```
@@ -468,12 +471,12 @@ cat("Time for testing gbm model = ", tm_test_gbm[1], " seconds \n" , sep = "")
 ### Step 4: Train a classification model with training features and responses
 Call the train model and test model from library. 
 
-`train.R` and `test.R` should be wrappers for all your model training steps and your classification/prediction steps. 
+`train_xgboost.R` and `test_xgboost.R` should be wrappers for all your model training steps and your classification/prediction steps. 
 
-+ `train.R`
++ `train_xgboost.R`
   + Input: a data frame containing features and labels and a parameter list.
   + Output:a trained model
-+ `test.R`
++ `test_xgboost.R`
   + Input: the fitted classification model using training data and processed features from testing images 
   + Input: an R object that contains a trained classifier.
   + Output: training model specification
@@ -516,16 +519,24 @@ colnames(res_cv_xgboost) <- c("mean_error", "sd_error", "mean_AUC", "sd_AUC")
 
 res_cv_xgboost_cv_results = data.frame(hyper_grid_xgboost, res_cv_xgboost)
 
-# a subset of cross-validated xgboost models (150 total)
+# a subset of cross-validated xgboost models ordered by mean AUC (150 total)
 # see appendix for full table
-res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 1200 & res_cv_xgboost_cv_results$gamma == 0 & res_cv_xgboost_cv_results$lambda == 0.05, ]
+res_cv_xgboost_cv_results[order(res_cv_xgboost_cv_results$mean_AUC, decreasing = TRUE), ][1:5, ]
 
 # Mean Error
-ggplot(res_cv_xgboost_cv_results, aes(as.factor(nrounds), as.factor(eta), fill = mean_error)) + 
+# gamma = 0, lambda = 0.05
+ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$gamma == 0 & res_cv_xgboost_cv_results$lambda == 0.05, ], aes(as.factor(nrounds), as.factor(eta), fill = mean_error)) + 
+  geom_tile()
+# gamma = 0, lambda = 0.10
+ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$gamma == 0 & res_cv_xgboost_cv_results$lambda == 0.10, ], aes(as.factor(nrounds), as.factor(eta), fill = mean_error)) + 
   geom_tile()
 
 # Mean AUC
-ggplot(res_cv_xgboost_cv_results, aes(as.factor(nrounds), as.factor(eta), fill = mean_AUC)) + 
+# # gamma = 0, lambda = 0.05
+ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$gamma == 0 & res_cv_xgboost_cv_results$lambda == 0.05, ], aes(as.factor(nrounds), as.factor(eta), fill = mean_AUC)) + 
+  geom_tile()
+# gamma = 0, lambda = 0.10
+ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$gamma == 0 & res_cv_xgboost_cv_results$lambda == 0.10, ], aes(as.factor(nrounds), as.factor(eta), fill = mean_AUC)) + 
   geom_tile()
 
 
@@ -571,14 +582,21 @@ ggplot(res_cv_xgboost_cv_results[res_cv_xgboost_cv_results$nrounds == 1800 & res
 
 * Choose the "best" parameter value
 
-```{r best_model_xgboost}
-par_best_res_cv_xgboost_cv_results_ind <- 
-  which(res_cv_xgboost_cv_results$mean_AUC == max(res_cv_xgboost_cv_results$mean_AUC))
+Due to the presence imbalanced data, we choose to focus out attention on highest mean AUC rather than lowest mean error. However, we notice that the second best model (model 67) is has an mean AUC comparable to that of the best model (model 23) while being much simpler--model 23 has 600 trees while model 67 has 1200--we choose to select the more parsimonious model as our best proposed xgboost model. 
 
-par_best_res_cv_xgboost_cv_results_eta <- res_cv_xgboost_cv_results$eta[par_best_res_cv_xgboost_cv_results_ind]
-par_best_res_cv_xgboost_cv_results_lambda <- res_cv_xgboost_cv_results$lambda[par_best_res_cv_xgboost_cv_results_ind]
-par_best_res_cv_xgboost_cv_results_gamma <- res_cv_xgboost_cv_results$gamma[par_best_res_cv_xgboost_cv_results_ind]
-par_best_res_cv_xgboost_cv_results_nrounds <- res_cv_xgboost_cv_results$nrounds[par_best_res_cv_xgboost_cv_results_ind]
+```{r best_model_xgboost}
+res_cv_xgboost_cv_results[order(res_cv_xgboost_cv_results$mean_AUC, decreasing = TRUE), ][2, ]
+
+par_best_res_cv_xgboost_cv_results_ind <- 23
+
+par_best_res_cv_xgboost_cv_results_eta <- 
+  res_cv_xgboost_cv_results$eta[par_best_res_cv_xgboost_cv_results_ind]
+par_best_res_cv_xgboost_cv_results_lambda <- 
+  res_cv_xgboost_cv_results$lambda[par_best_res_cv_xgboost_cv_results_ind]
+par_best_res_cv_xgboost_cv_results_gamma <- 
+  res_cv_xgboost_cv_results$gamma[par_best_res_cv_xgboost_cv_results_ind]
+par_best_res_cv_xgboost_cv_results_nrounds <- 
+  res_cv_xgboost_cv_results$nrounds[par_best_res_cv_xgboost_cv_results_ind]
 ```
 
 

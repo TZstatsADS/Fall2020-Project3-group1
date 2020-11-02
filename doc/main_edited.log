@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.11.1)  1 NOV 2020 15:05
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.11.1)  1 NOV 2020 23:25
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -620,102 +620,120 @@ Package pdftex.def Info: main_edited_files/figure-latex/cv_vis_gbm-8.pdf  used
 on input line 558.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [13 <./main_edited_files/figure-latex/cv_vis_gbm-7.pdf>] [14 <./main_edited_fil
-es/figure-latex/cv_vis_gbm-8.pdf>] [15] [16]
-<main_edited_files/figure-latex/cv_vis_xgboost-1.pdf, id=246, 469.755pt x 325.2
+es/figure-latex/cv_vis_gbm-8.pdf>] [15] [16] [17]
+<main_edited_files/figure-latex/cv_vis_xgboost-1.pdf, id=250, 469.755pt x 325.2
 15pt>
 File: main_edited_files/figure-latex/cv_vis_xgboost-1.pdf Graphic file (type pd
 f)
 <use main_edited_files/figure-latex/cv_vis_xgboost-1.pdf>
 Package pdftex.def Info: main_edited_files/figure-latex/cv_vis_xgboost-1.pdf  u
-sed on input line 800.
+sed on input line 820.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<main_edited_files/figure-latex/cv_vis_xgboost-2.pdf, id=247, 469.755pt x 325.2
+<main_edited_files/figure-latex/cv_vis_xgboost-2.pdf, id=251, 469.755pt x 325.2
 15pt>
 File: main_edited_files/figure-latex/cv_vis_xgboost-2.pdf Graphic file (type pd
 f)
 <use main_edited_files/figure-latex/cv_vis_xgboost-2.pdf>
 Package pdftex.def Info: main_edited_files/figure-latex/cv_vis_xgboost-2.pdf  u
-sed on input line 810.
+sed on input line 830.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[17 <./main_edited_files/figure-latex/cv_vis_xgboost-1.pdf>]
-<main_edited_files/figure-latex/cv_vis_xgboost-3.pdf, id=258, 469.755pt x 325.2
+[18 <./main_edited_files/figure-latex/cv_vis_xgboost-1.pdf>]
+<main_edited_files/figure-latex/cv_vis_xgboost-3.pdf, id=262, 469.755pt x 325.2
 15pt>
 File: main_edited_files/figure-latex/cv_vis_xgboost-3.pdf Graphic file (type pd
 f)
 <use main_edited_files/figure-latex/cv_vis_xgboost-3.pdf>
 Package pdftex.def Info: main_edited_files/figure-latex/cv_vis_xgboost-3.pdf  u
-sed on input line 823.
+sed on input line 841.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[18 <./main_edited_files/figure-latex/cv_vis_xgboost-2.pdf>]
-<main_edited_files/figure-latex/cv_vis_xgboost-4.pdf, id=269, 469.755pt x 325.2
+[19 <./main_edited_files/figure-latex/cv_vis_xgboost-2.pdf>]
+<main_edited_files/figure-latex/cv_vis_xgboost-4.pdf, id=274, 469.755pt x 325.2
 15pt>
 File: main_edited_files/figure-latex/cv_vis_xgboost-4.pdf Graphic file (type pd
 f)
 <use main_edited_files/figure-latex/cv_vis_xgboost-4.pdf>
 Package pdftex.def Info: main_edited_files/figure-latex/cv_vis_xgboost-4.pdf  u
-sed on input line 835.
+sed on input line 851.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[19 <./main_edited_files/figure-latex/cv_vis_xgboost-3.pdf>]
-<main_edited_files/figure-latex/cv_vis_xgboost-5.pdf, id=280, 469.755pt x 325.2
+[20 <./main_edited_files/figure-latex/cv_vis_xgboost-3.pdf>]
+<main_edited_files/figure-latex/cv_vis_xgboost-5.pdf, id=285, 469.755pt x 325.2
 15pt>
 File: main_edited_files/figure-latex/cv_vis_xgboost-5.pdf Graphic file (type pd
 f)
 <use main_edited_files/figure-latex/cv_vis_xgboost-5.pdf>
 Package pdftex.def Info: main_edited_files/figure-latex/cv_vis_xgboost-5.pdf  u
-sed on input line 847.
+sed on input line 864.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[20 <./main_edited_files/figure-latex/cv_vis_xgboost-4.pdf>]
-<main_edited_files/figure-latex/cv_vis_xgboost-6.pdf, id=290, 469.755pt x 325.2
+[21 <./main_edited_files/figure-latex/cv_vis_xgboost-4.pdf>]
+<main_edited_files/figure-latex/cv_vis_xgboost-6.pdf, id=296, 469.755pt x 325.2
 15pt>
 File: main_edited_files/figure-latex/cv_vis_xgboost-6.pdf Graphic file (type pd
 f)
 <use main_edited_files/figure-latex/cv_vis_xgboost-6.pdf>
 Package pdftex.def Info: main_edited_files/figure-latex/cv_vis_xgboost-6.pdf  u
-sed on input line 860.
+sed on input line 876.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[21 <./main_edited_files/figure-latex/cv_vis_xgboost-5.pdf>]
-<main_edited_files/figure-latex/cv_vis_xgboost-7.pdf, id=300, 469.755pt x 325.2
+[22 <./main_edited_files/figure-latex/cv_vis_xgboost-5.pdf>]
+<main_edited_files/figure-latex/cv_vis_xgboost-7.pdf, id=306, 469.755pt x 325.2
 15pt>
 File: main_edited_files/figure-latex/cv_vis_xgboost-7.pdf Graphic file (type pd
 f)
 <use main_edited_files/figure-latex/cv_vis_xgboost-7.pdf>
 Package pdftex.def Info: main_edited_files/figure-latex/cv_vis_xgboost-7.pdf  u
-sed on input line 872.
+sed on input line 888.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[22 <./main_edited_files/figure-latex/cv_vis_xgboost-6.pdf>]
-<main_edited_files/figure-latex/cv_vis_xgboost-8.pdf, id=311, 469.755pt x 325.2
+[23 <./main_edited_files/figure-latex/cv_vis_xgboost-6.pdf>]
+<main_edited_files/figure-latex/cv_vis_xgboost-8.pdf, id=317, 469.755pt x 325.2
 15pt>
 File: main_edited_files/figure-latex/cv_vis_xgboost-8.pdf Graphic file (type pd
 f)
 <use main_edited_files/figure-latex/cv_vis_xgboost-8.pdf>
 Package pdftex.def Info: main_edited_files/figure-latex/cv_vis_xgboost-8.pdf  u
-sed on input line 884.
+sed on input line 901.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[23 <./main_edited_files/figure-latex/cv_vis_xgboost-7.pdf>] [24 <./main_edited
-_files/figure-latex/cv_vis_xgboost-8.pdf>]
-Overfull \hbox (81.49338pt too wide) in paragraph at lines 989--989
-[]\T1/lmtt/m/n/10 ## The accuracy of the xgboost model (eta = 0.05, nrounds = 1
-200, lambda = 0.05, gamma = 0) is 70.35789%.[] 
+[24 <./main_edited_files/figure-latex/cv_vis_xgboost-7.pdf>]
+<main_edited_files/figure-latex/cv_vis_xgboost-9.pdf, id=327, 469.755pt x 325.2
+15pt>
+File: main_edited_files/figure-latex/cv_vis_xgboost-9.pdf Graphic file (type pd
+f)
+<use main_edited_files/figure-latex/cv_vis_xgboost-9.pdf>
+Package pdftex.def Info: main_edited_files/figure-latex/cv_vis_xgboost-9.pdf  u
+sed on input line 913.
+(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
+[25 <./main_edited_files/figure-latex/cv_vis_xgboost-8.pdf>]
+<main_edited_files/figure-latex/cv_vis_xgboost-10.pdf, id=338, 469.755pt x 325.
+215pt>
+File: main_edited_files/figure-latex/cv_vis_xgboost-10.pdf Graphic file (type p
+df)
+<use main_edited_files/figure-latex/cv_vis_xgboost-10.pdf>
+Package pdftex.def Info: main_edited_files/figure-latex/cv_vis_xgboost-10.pdf  
+used on input line 925.
+(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
+[26 <./main_edited_files/figure-latex/cv_vis_xgboost-9.pdf>] [27 <./main_edited
+_files/figure-latex/cv_vis_xgboost-10.pdf>] [28]
+Overfull \hbox (65.74342pt too wide) in paragraph at lines 1051--1051
+[]\T1/lmtt/m/n/10 ## The accuracy of the xgboost model (eta = 0.1, nrounds = 60
+0, lambda = 0.1, gamma = 0) is 70.86316%.[] 
  []
 
 
-Overfull \hbox (55.24345pt too wide) in paragraph at lines 993--993
-[]\T1/lmtt/m/n/10 ## The AUC of the xgboost model (eta = 0.05, nrounds = 1200, 
-lambda = 0.05, gamma = 0) is 0.7965979.[] 
+Overfull \hbox (39.4935pt too wide) in paragraph at lines 1055--1055
+[]\T1/lmtt/m/n/10 ## The AUC of the xgboost model (eta = 0.1, nrounds = 600, la
+mbda = 0.1, gamma = 0) is 0.7970021.[] 
  []
 
-[25] [26] [27] [28] [29] [30] [31] [32] [33] [34] (./main_edited.aux)
+[29] [30] [31] [32] [33] [34] [35] [36] [37] (./main_edited.aux)
 Package rerunfilecheck Info: File `main_edited.out' has not changed.
 (rerunfilecheck)             Checksum: AD10E986FA9BF3BF40C67525F1E0D16E;5764.
  ) 
 Here is how much of TeX's memory you used:
- 11106 strings out of 481466
- 165627 string characters out of 5920170
- 468958 words of memory out of 5000000
- 27541 multiletter control sequences out of 15000+600000
+ 11121 strings out of 481466
+ 166290 string characters out of 5920170
+ 469134 words of memory out of 5000000
+ 27551 multiletter control sequences out of 15000+600000
  569663 words of font info for 56 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 66i,6n,72p,510b,468s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 66i,6n,72p,554b,466s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/Users/backm/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ts1.
 enc}{c:/Users/backm/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec
 .enc}<c:/Users/backm/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/l
@@ -727,10 +745,10 @@ e1/public/lm/lmr12.pfb><c:/Users/backm/AppData/Roaming/TinyTeX/texmf-dist/fonts
 onts/type1/public/lm/lmtk10.pfb><c:/Users/backm/AppData/Roaming/TinyTeX/texmf-d
 ist/fonts/type1/public/lm/lmtt10.pfb><c:/Users/backm/AppData/Roaming/TinyTeX/te
 xmf-dist/fonts/type1/public/lm/lmtti10.pfb>
-Output written on main_edited.pdf (34 pages, 3002384 bytes).
+Output written on main_edited.pdf (37 pages, 3013992 bytes).
 PDF statistics:
- 448 PDF objects out of 1000 (max. 8388607)
- 362 compressed objects within 4 object streams
- 100 named destinations out of 1000 (max. 500000)
- 270 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 478 PDF objects out of 1000 (max. 8388607)
+ 383 compressed objects within 4 object streams
+ 103 named destinations out of 1000 (max. 500000)
+ 280 words of extra memory for PDF output out of 10000 (max. 10000000)
 

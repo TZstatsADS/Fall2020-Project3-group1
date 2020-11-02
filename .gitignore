@@ -1,0 +1,9 @@
+# History files
+.Rhistory
+
+# Session Data files
+.RData
+.DS_Store
+
+data/train_set/
+doc/test.R

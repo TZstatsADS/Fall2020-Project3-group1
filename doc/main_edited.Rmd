@@ -69,6 +69,10 @@ if(!require("randomForest")){
   install.packages("randomForest")
 }
 
+if(!require("ranger")){
+  install.packages("ranger")
+}
+
 
 library(R.matlab)
 library(readxl)
@@ -82,7 +86,7 @@ library(WeightedROC)
 library(gbm)
 library(xgboost)
 library(randomForest)
-
+library(ranger)
 # install other packages as needed using the format above 
 
 
@@ -98,7 +102,7 @@ library(randomForest)
 ```{r wkdir, eval=FALSE}
 
 set.seed(2020)
-setwd("~/GitHub/Fall2020-Project3-group1/doc")
+# setwd("~/GitHub/Fall2020-Project3-group1/doc")
 
 
 # change the working directory as needed
@@ -114,9 +118,9 @@ Provide directories for training images. Training images and Training fiducial p
 ```{r}
 # change the directory of the data to where it's stored in your local drive as needed
 
-# train_dir <- "../data/train_set/" # This will be modified for different data sets.
+train_dir <- "../data/train_set/" # This will be modified for different data sets.
 
-train_dir <- "~/train_set/"
+# train_dir <- "~/train_set/"
 
 
 train_image_dir <- paste(train_dir, "images/", sep="")
@@ -152,6 +156,10 @@ run.cv.xgboost <- FALSE # run cross-validation on the training set for xgboost
 run.train.xgboost <- FALSE # run evaluation on entire train set
 run.test.xgboost <- TRUE # run evaluation on an independent test set
 
+run.cv.rforestw <- FALSE # run cross-validation on the training set for xgboost 
+run.train.rforestw <- FALSE # run evaluation on entire train set
+run.test.rforestw <- TRUE # run evaluation on an independent test set
+
 # add controls here to make if else statements to either cross-validate, test, train, or to just load saved data
 # for xgboost, we need to also train and test each time we knit to record the time for the model 
 
@@ -183,10 +191,11 @@ hyper_grid_xgboost <- expand.grid(
 )
 
 
-# random forest model 
-
-
-
+# random forest with weights model 
+hyper_grid_rforest <- expand.grid(
+  ntrees = c(1500, 3000, 6000),
+  maxd = c(0, 5, 10, 15, 20, 25)
+)
 
 
 
@@ -766,7 +775,7 @@ Prediction performance matters, so does the running times for constructing featu
 
 \newpage
 
-## Random Forests
+## Random Forest
 
 ### Step 4: Train a classification model with training features and responses
 Call the train model and test model from library. 
@@ -930,6 +939,213 @@ cat("Time for training random forest model=", rftraintime, "min \n")
 cat("Time for testing random forest model=", rftesttime, "s \n")
 
 ```
+
+
+\newpage
+
+## Random Forest with weights
+
+### Step 4: Train a classification model with training features and responses
+Call the train model and test model from library. 
+
+`train.R` and `test.R` should be wrappers for all your model training steps and your classification/prediction steps. 
+
++ `train.R`
++ Input: a data frame containing features and labels and a parameter list.
++ Output:a trained model
++ `test.R`
++ Input: the fitted classification model using training data and processed features from testing images 
++ Input: an R object that contains a trained classifier.
++ Output: training model specification
+
+```{r loadlib_rfw}
+source("../lib/train_RFw.R") 
+source("../lib/test_RFw.R")
+source("../lib/cross_validation_RFw.R")
+```
+
+
+#### Model selection with cross-validation
+* Do model selection by choosing among different values of training model parameters.
+
+```{r}
+if(run.cv.rforestw){
+  res_cv <- matrix(0, nrow = nrow(hyper_grid_rforest), ncol = 4)
+  for (i in 1:nrow(hyper_grid_rforest)){
+    print(hyper_grid_rforest$ntree[i])
+    print(hyper_grid_rforest$maxd[i])
+    
+    res_cv[i,] <- cv.function(features = feature_train, 
+                             labels = label_train, 
+                             ntree = hyper_grid_rforest$ntree[i],
+                             md = hyper_grid_rforest$maxd[i],
+                             K, reweight = sample.reweight
+    )
+  }
+  save(res_cv, file="../output/res_cv_rforestw.RData")
+}else{
+  load("../output/res_cv_rforestw.RData")
+}
+```
+
+
+*Visualize cross-validation results. 
+```{r cv_vis_rforestw}
+res_cv_rforest <- as.data.frame(res_cv) 
+colnames(res_cv_rforest) <- c("mean_error", "sd_error", "mean_AUC", "sd_AUC")
+
+res_cv_rforest_cv_results = data.frame(hyper_grid_rforest, res_cv_rforest)
+
+# Mean Error
+ggplot(res_cv_rforest_cv_results, aes(as.factor(ntrees), as.factor(maxd), fill = mean_error)) + 
+  geom_tile()
+
+# Mean AUC
+ggplot(res_cv_rforest_cv_results, aes(as.factor(ntrees), as.factor(maxd), fill = mean_AUC)) + 
+  geom_tile()
+
+
+# Mean Error
+# nrounds = 1500
+ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 1500, ],
+       aes(x = as.factor(maxd), y = mean_error, 
+           ymin = mean_error - sd_error, ymax = mean_error + sd_error)) + 
+  geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# nrounds = 3000
+ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 3000, ],
+       aes(x = as.factor(maxd), y = mean_error, 
+           ymin = mean_error - sd_error, ymax = mean_error + sd_error)) + 
+  geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# nrounds = 6000
+ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 6000, ],
+       aes(x = as.factor(maxd), y = mean_error, 
+           ymin = mean_error - sd_error, ymax = mean_error + sd_error)) + 
+  geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+# Mean AUC
+# N.Trees = 1500
+ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 1500, ],
+       aes(x = as.factor(maxd), y = mean_AUC, 
+           ymin = mean_AUC - sd_AUC, ymax = mean_AUC + sd_AUC)) + 
+  geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# N.Trees = 3000
+ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 3000, ],
+       aes(x = as.factor(maxd), y = mean_AUC, 
+           ymin = mean_AUC - sd_AUC, ymax = mean_AUC + sd_AUC)) + 
+  geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# N.Trees = 6000
+ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 6000, ],
+       aes(x = as.factor(maxd), y = mean_AUC, 
+           ymin = mean_AUC - sd_AUC, ymax = mean_AUC + sd_AUC)) + 
+  geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+
+* Choose the "best" parameter value
+
+Due to the presence imbalanced data, we choose to focus out attention on highest mean AUC rather than lowest mean error. However, we notice that the second best model (model 67) is has an mean AUC comparable to that of the best model (model 23) while being much simpler--model 23 has 600 trees while model 67 has 1200--we choose to select the more parsimonious model as our best proposed xgboost model. 
+
+```{r best_model_rforestw}
+# res_cv_rforest_cv_results[order(res_cv_rforest_cv_results$mean_AUC, decreasing = TRUE), ][2, ]
+
+par_best_res_cv_rforest_cv_results_ind <- min(which(
+  res_cv_rforest_cv_results$mean_AUC == max(res_cv_rforest_cv_results$mean_AUC)))
+
+par_best_res_cv_xgboost_cv_results_ntrees <- 
+  res_cv_rforest_cv_results$ntrees[par_best_res_cv_rforest_cv_results_ind]
+par_best_res_cv_xgboost_cv_results_md <- 
+  res_cv_rforest_cv_results$maxd[par_best_res_cv_rforest_cv_results_ind]
+
+```
+
+
+
+* Train the model with the entire training set using the selected model (model parameter) via cross-validation.
+```{r final_train_rforestw}
+if (run.train.rforestw) {
+  # training weights
+  weight_train <- rep(NA, length(label_train))
+  for (v in unique(label_train)){
+    weight_train[label_train == v] = 0.5 * length(label_train) / length(label_train[label_train == v])
+  }
+
+  if (sample.reweight){
+    tm_train_rforestw <- system.time(fit_train_rforestw <- train(features = feature_train, labels = label_train,
+                                                                 w =  weight_train,
+                                                                 ntree = par_best_res_cv_xgboost_cv_results_ntrees,
+                                                                 md = par_best_res_cv_xgboost_cv_results_md))
+
+  } else {
+
+    tm_train_rforestw <- system.time(fit_train_rforestw <- train(features = feature_train, labels = label_train,
+                                                                 w =  NULL, 
+                                                                 ntree = par_best_res_cv_xgboost_cv_results_ntrees, 
+                                                                 md = par_best_res_cv_xgboost_cv_results_md))
+  }
+  save(fit_train_rforestw, tm_train_rforestw, file="../output/fit_train_rforestw.RData")
+  
+} else {
+  load(file="../output/fit_train_rforestw.RData")
+}
+```
+
+### Step 5: Run test on test images
+
+```{r}
+feature_test <- as.matrix(dat_test[, -6007])
+label_test <- as.integer(dat_test$label)
+
+tm_test_rforestw= NA
+
+if(run.test.rforestw){
+  load(file="../output/fit_train_xgboost.RData")
+  tm_test_xgboost <- system.time({prob_pred <- predict(fit_train_rforestw, feature_test); 
+                              label_pred <- prob_pred$predictions})
+}
+```
+
+* Evaluation
+
+```{r}
+## reweight the test data to represent a balanced label distribution
+weight_test <- rep(NA, length(label_test))
+for (v in unique(label_test)){
+  weight_test[label_test == v] = 0.5 * length(label_test) / length(label_test[label_test == v])
+}
+
+# convert the original 1-2 class into numeric 0s and 1s
+label_test <- ifelse(label_test == 2, 0, 1)
+
+accu <- sum(weight_test * (label_pred == label_test)) / sum(weight_test)
+tpr.fpr <- WeightedROC(prob_pred$predictions, label_test, weight_test)
+auc <- WeightedAUC(tpr.fpr)
+```
+
+
+```{r, echo = FALSE}
+cat("The accuracy of the random forest with weights model (", "ntrees = ", par_best_res_cv_xgboost_cv_results_ntrees, 
+     ", max_depth = ", par_best_res_cv_xgboost_cv_results_md, 
+
+    ") is ", accu*100, "%.\n", sep = "")
+cat("The AUC of the random forest with weights  model (", "ntrees = ", par_best_res_cv_xgboost_cv_results_ntrees, 
+    ", max_depth = ", par_best_res_cv_xgboost_cv_results_md, 
+    ") is ", auc, ".\n", sep = "")
+```
+
+#### Summarize Running Time
+
+Prediction performance matters, so does the running times for constructing features and for training the model, especially when the computation resource is limited. 
+
+```{r running_time_rforestw, echo = FALSE}
+cat("Time for training random forest with weights model = ", tm_train_rforestw[1], " seconds \n", sep = "") 
+cat("Time for testing random forest with weights model = ", tm_test_rforestw[1], " seconds \n" , sep = "")
+```
+
 
 
 

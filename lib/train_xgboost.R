@@ -7,7 +7,7 @@ train <- function(features, labels, w = NULL, eta_val, lmd, gam, nr){
   
   param <- list(objective = "binary:logistic", eval_metric = "auc")
   
-  model <- xgboost(data = feature_train, 
+  model <- xgboost(data = features, 
                            label = labels, 
                            weight =  w, 
                            params = param, 

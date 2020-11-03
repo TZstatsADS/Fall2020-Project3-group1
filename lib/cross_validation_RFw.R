@@ -2,7 +2,7 @@
 ### Cross Validation ###
 ########################
 
-### Author: Chengliang Tang
+### Author: Kristen Akey
 ### Project 3
 
 cv.function <- function(features, labels, K, ntree, md, reweight = reweight){

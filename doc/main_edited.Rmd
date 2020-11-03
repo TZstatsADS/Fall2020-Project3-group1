@@ -221,7 +221,7 @@ hyper_grid_rf_uw <- expand.grid(
 
 # random forest with weights model 
 hyper_grid_rforest <- expand.grid(
-  ntrees = c(1500, 3000, 6000),
+  ntrees = c(100, 300, 500, 800, 1000),
   maxd = c(0, 5, 10, 15, 20, 25)
 )
 
@@ -1074,6 +1074,8 @@ source("../lib/cross_validation_RFw.R")
 * Do model selection by choosing among different values of training model parameters.
 
 ```{r}
+sample.reweight <- T
+
 if(run.cv.rforestw){
   res_cv <- matrix(0, nrow = nrow(hyper_grid_rforest), ncol = 4)
   for (i in 1:nrow(hyper_grid_rforest)){
@@ -1111,40 +1113,40 @@ ggplot(res_cv_rforest_cv_results, aes(as.factor(ntrees), as.factor(maxd), fill =
 
 
 # Mean Error
-# nrounds = 1500
-ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 1500, ],
+# ntrees = 100
+ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 100, ],
        aes(x = as.factor(maxd), y = mean_error, 
            ymin = mean_error - sd_error, ymax = mean_error + sd_error)) + 
   geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-# nrounds = 3000
-ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 3000, ],
+# ntrees = 300
+ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 300, ],
        aes(x = as.factor(maxd), y = mean_error, 
            ymin = mean_error - sd_error, ymax = mean_error + sd_error)) + 
   geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-# nrounds = 6000
-ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 6000, ],
+# ntrees = 500
+ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 500, ],
        aes(x = as.factor(maxd), y = mean_error, 
            ymin = mean_error - sd_error, ymax = mean_error + sd_error)) + 
   geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 
 # Mean AUC
-# N.Trees = 1500
-ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 1500, ],
+# ntrees = 100
+ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 100, ],
        aes(x = as.factor(maxd), y = mean_AUC, 
            ymin = mean_AUC - sd_AUC, ymax = mean_AUC + sd_AUC)) + 
   geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-# N.Trees = 3000
-ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 3000, ],
+# ntrees = 300
+ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 300, ],
        aes(x = as.factor(maxd), y = mean_AUC, 
            ymin = mean_AUC - sd_AUC, ymax = mean_AUC + sd_AUC)) + 
   geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
-# N.Trees = 6000
-ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 6000, ],
+# ntrees = 500
+ggplot(res_cv_rforest_cv_results[res_cv_rforest_cv_results$ntrees == 500, ],
        aes(x = as.factor(maxd), y = mean_AUC, 
            ymin = mean_AUC - sd_AUC, ymax = mean_AUC + sd_AUC)) + 
   geom_crossbar() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -1158,8 +1160,8 @@ Due to the presence imbalanced data, we choose to focus out attention on highest
 ```{r best_model_rforestw}
 # res_cv_rforest_cv_results[order(res_cv_rforest_cv_results$mean_AUC, decreasing = TRUE), ][2, ]
 
-par_best_res_cv_rforest_cv_results_ind <- min(which(
-  res_cv_rforest_cv_results$mean_AUC == max(res_cv_rforest_cv_results$mean_AUC)))
+par_best_res_cv_rforest_cv_results_ind <- which(
+  res_cv_rforest_cv_results$mean_AUC == max(res_cv_rforest_cv_results$mean_AUC))
 
 par_best_res_cv_xgboost_cv_results_ntrees <- 
   res_cv_rforest_cv_results$ntrees[par_best_res_cv_rforest_cv_results_ind]

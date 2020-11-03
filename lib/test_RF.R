@@ -3,7 +3,7 @@
 ###########################################################
 
 test_RF <- function(model, features){
-  res <- predict(model, newx = features)
+  res <- predict(model, features)
   return(res)
 }
 

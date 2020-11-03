@@ -1040,8 +1040,8 @@ Prediction performance matters, so does the running times for constructing featu
 
 ```{r running_time_rf, echo = FALSE}
 
-cat("Time for training random forest model=", tm_train_RF, "min \n") 
-cat("Time for testing random forest model=", tm_test_RF, "s \n")
+cat("Time for training random forest model=", tm_train_RF[1], "s \n") 
+cat("Time for testing random forest model=", tm_test_RF[1], "s \n")
 
 ```
 

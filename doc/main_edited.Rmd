@@ -39,9 +39,8 @@ Considering that the featured training set is highly-unbalanced, we try random f
 
 # Results
 
-![Figure1](../figs/comparison_accuracy_auc.png)
-![Figure2](../figs/comparison_train_time.png)
-![Figure3](../figs/comparison_test_time.png)
+![Figure1](../figs/comparison_time.png)
+![Figure2](../figs/comparison_accu_auc.png)
 
 
 # Analysis
@@ -297,7 +296,7 @@ gbm_cv_results[order(gbm_cv_results$mean_AUC, decreasing = TRUE), ][1:5, ]
 
 * Visualize cross-validation results
 
-```{r cv_vis_gbm_1,out.width = "65%", echo=FALSE}
+```{r cv_vis_gbm_1,out.width = "65%",fig.align = 'center', echo=FALSE}
 # Mean Error
 p1 = ggplot(
   gbm_cv_results, aes(as.factor(shrinkage), as.factor(n.trees), fill = mean_error)) +
@@ -315,7 +314,7 @@ grid.arrange(p1, p2,nrow=2)
 
 We could also see here that the set of parameters which will give us the smallest mean error is shrinkage = 0.05 and ntrees = 600 and that the set of parameters  which will give us the biggest mean AUC is shrinkage = 0.05 and ntrees = 1200.
 
-```{r cv_vis_gbm_2, out.width = "65%",echo=FALSE}
+```{r cv_vis_gbm_2, out.width = "65%",fig.align = 'center',echo=FALSE}
 # Mean Error
 # N.Trees = 600
 p1 <- ggplot(gbm_cv_results[gbm_cv_results$n.trees == 600, ],
@@ -532,7 +531,7 @@ res_cv_xgboost_cv_results[order(
 
 * Visualize cross-validation results.
 
-```{r cv_vis_xgboost_1,out.width = "65%", echo=FALSE}
+```{r cv_vis_xgboost_1,out.width = "65%", fig.align = 'center',echo=FALSE}
 # Mean Error
 # gamma = 0, lambda = 0.05
 p1 = ggplot(
@@ -577,7 +576,7 @@ grid.arrange(p1, p2,p3,p4,ncol=2, nrow=2)
 
 Since the xgboost model have 4 parameters in total, and we could only show 2 of them in a 2-D plot, we choose only to display several comparative plots to give a brief idea of visualizing the data.  To actually select the best model, we are using the method to be discussed in the next section.
 
-```{r cv_vis_xgboost_2, out.width = "65%",echo=FALSE}
+```{r cv_vis_xgboost_2, out.width = "65%",fig.align = 'center',echo=FALSE}
 # Mean Error
 # nrounds = 600, gamma = 0, lambda = 0.05
 p1 = ggplot(
@@ -778,7 +777,7 @@ if(run.cv.svm){
 
 * Visualize cross-validation results.
 
-```{r cv_vis_svm, out.width = "65%",echo=FALSE}
+```{r cv_vis_svm, out.width = "65%",fig.align = 'center',echo=FALSE}
 res_cv_svm <- as.data.frame(res_cv_svm) 
 colnames(res_cv_svm) <- c(
   "mean_error", "sd_error", "mean_AUC", "sd_AUC","mean_accu","sd_accu")
@@ -915,7 +914,7 @@ if(run.cv.RF){
 
 * Visualize cross-validation results. 
 
-```{r cv_vis_rf, out.width = "65%",echo=FALSE}
+```{r cv_vis_rf, out.width = "65%",fig.align = 'center',echo=FALSE}
 res_cv_rforest <- as.data.frame(res_cv) 
 colnames(res_cv_rforest) <- c("mean_error", "sd_error", "mean_AUC", "sd_AUC")
 
@@ -1058,7 +1057,7 @@ res_cv_rforest_cv_results[order(res_cv_rforest_cv_results$mean_AUC, decreasing =
 
 * Visualize cross-validation results
 
-```{r cv_vis_rfw_1, out.width = "65%",echo=FALSE}
+```{r cv_vis_rfw_1, out.width = "65%",fig.align = 'center',echo=FALSE}
 # Mean Error
 p1 = ggplot(
   res_cv_rforest_cv_results, aes(as.factor(ntrees), as.factor(maxd), fill = mean_error)) + 
@@ -1076,7 +1075,7 @@ grid.arrange(p1, p2,nrow=2)
 
 We could also see here that the set of parameters which will give us the smallest mean error is maxd = 25 and ntrees = 100 and that the set of parameters  which will give us the biggest mean AUC is maxd = 0 and ntrees = 100.
 
-```{r cv_vis_rfw_2, out.width = "65%",echo=FALSE}
+```{r cv_vis_rfw_2, out.width = "65%",fig.align = 'center',echo=FALSE}
 # Mean Error
 # ntrees = 100
 p1 <- ggplot(
@@ -1239,7 +1238,7 @@ cat("Time for testing random forest with weights model = ",
 ```
 
 # Results
-```{r results_2, out.width = "65%",echo=FALSE}
+```{r results_2, out.width = "65%",fig.align = 'center',echo=FALSE}
 accu = c(accu_gbm,accu_xgboost,accu_svm,accu_rf,accu_rfw)
 auc = c(auc_gbm,auc_xgboost,auc_svm,auc_rf,auc_rfw)
 tm_train = c(tm_train_gbm[1], tm_train_xgboost[1],tm_train_svm[1],
@@ -1253,7 +1252,6 @@ p1 = ggplot(data=results,aes(x = as.factor(model), y = tm_train))+
   geom_bar(stat="identity")+
   theme_minimal()+
   labs(title="Training time of All 5 Models",x="models",y="training time")
-ggsave(path = "../figs","comparison_train_time.png",width=4, height=3)
 
 p2 = ggplot(data=results,aes(x = as.factor(model), y = tm_test))+
   geom_bar(stat="identity")+
@@ -1261,11 +1259,10 @@ p2 = ggplot(data=results,aes(x = as.factor(model), y = tm_test))+
   labs(title="Testing time of All 5 Models",x="models",y="testing time")
 
 grid.arrange(p1, p2,ncol=2)
-ggsave(path = "../figs","comparison_test_time.png",width=4, height=3)
 ```
 
 
-```{r results_3,out.width = "65%", echo=FALSE}
+```{r results_3,out.width = "65%", fig.align = 'center',echo=FALSE}
 results_barplot = data.frame(model=c(model,model),value=c(accu,auc),
                              factor=as.factor(c(rep("accuracy", 5),rep("AUC", 5))))
 
@@ -1274,7 +1271,6 @@ ggplot(data=results_barplot,aes(x = model, y = value,fill=factor))+
   labs(title="Accuracy and AUC Comparison of All 5 Models",x="models",y="value")+
   scale_fill_brewer(palette="Blues")+
   theme_minimal()
-ggsave(path = "../figs","comparison_accuracy_auc.png",width=4, height=3)
 ```
 
 # Reference(s)

@@ -12,7 +12,7 @@ feature_train.RData
 fudicial_pt_list.RData
 	The extracted fiducial feature data from the 3000 raw images 
 fit_train_gbm.RData
-	Our gbm train model on the entire training set (2400 observations) after cross-validation
+	Our gbm train model on the entire training set (2400 observations) after cross-validation; ; this is not included in Github due to the size, please turn on the associated controls to obtain the file. 
 res_cv_gbm.RData
 	Results for cross-validation for gbm model 
 fit_train_RF.RData
@@ -20,7 +20,7 @@ fit_train_RF.RData
 fit_train_rforestw.RData
 	Our random forest with weights train model on the entire training set (2400 observations) after cross-validation
 fit_train_svm.RData
-	Our svm train model on the entire training set (2400 observations) after cross-validation
+	Our svm train model on the entire training set (2400 observations) after cross-validation; ; this is not included in Github due to the size, please turn on the associated controls to obtain the file. 
 fit_train_xgboost.RData
 	Our xgboost train model on the entire training set (2400 observations) after cross-validation
 res_cv_gbm.RData
@@ -35,7 +35,7 @@ res_cv_xgboost.RData
 	Results for cross-validation for xgboost model 
 	
 pcaCalc.rdata
-	Results, i.e., principal components after conducting PCA on featured data
+	Results, i.e., principal components after conducting PCA on featured data; this is not included in Github due to the size, please turn on the associated controls to obtain the file. 
 	
 	
 	

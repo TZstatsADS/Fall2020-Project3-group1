@@ -13,7 +13,7 @@ editor_options:
 
 # Introduction
 
-In this project, we created a classification engine for facial emotion recognition. Our group tried out four typical machine learning algorithms, trained them on the given data set, cross-validated to find the optimized parameters, and provided fair evaluation for all four of them. The evaluation process considered the mean error, the area under the ROC curve, and running time to give a thorough comparison of the four methods. 
+In this project, we created a classification engine for facial emotion recognition. Our group tried out four typical machine learning algorithms, trained them on the given data set, cross-validated to find the optimized parameters, and provided fair evaluation for all four of them. The evaluation process considered the mean error (and accuracy), the area under the ROC curve (or AUC), and running time (testing and training) to give a thorough comparison of the four methods. 
 
 # Models Introduction
 
@@ -259,7 +259,7 @@ Here we cross-validate parameters shrinkage and number of trees.
 + n.trees: the number of trees (or decision stumps) used in the model
 + shrinkage: the learning rate
 
-The model alsp uses several parameters that can be cross-validated, such as "interaction.depth" and "distribution" were set to fit the needs of this situation. For example, "interaction.depth" was set 1 since our focus was to use decision trees and "distribution" was set to "binomial" since there are only two classes.  
+The model also uses several parameters that can be cross-validated, such as "interaction.depth" and "distribution" were set to fit the needs of this situation. For example, "interaction.depth" was set to 1 since our focus was to use decision trees and "distribution" was set to "binomial" since there are only two classes.  
 
 We cross-validated three different values of "shrinkage" and three different values of "n.trees" for a total of 15 models cross-validated. We choose to test various slower learning rates--that is, none greater than 0.1, and we chose to consider 600, 1200, and 1800 decision stumps, as it could build a model based on approximately 10%, 20%, or 30%, respectively of the 6006 fiducial features. 
 
@@ -313,7 +313,7 @@ p2 = ggplot(
 grid.arrange(p1, p2,nrow=2)
 ```
 
-We could also see here that the set of parameters which will give us the smallest mean error is shrinkage = 0.05 and ntrees = 600 and that the set of parameters  which will give us the biggest mean AUC is shrinkage=0.05 and ntrees = 1200.
+We could also see here that the set of parameters which will give us the smallest mean error is shrinkage = 0.05 and ntrees = 600 and that the set of parameters  which will give us the biggest mean AUC is shrinkage = 0.05 and ntrees = 1200.
 
 ```{r cv_vis_gbm_2, out.width = "65%",echo=FALSE}
 # Mean Error
@@ -374,7 +374,7 @@ We could see in the plots the detailed performance of each set of parameters.
 
 * Choose the "best" parameter value
 
-Due to the presence imbalanced data, we choose to focus out attention on highest mean AUC rather than lowest mean error. However, we notice that the second best model (model 4) has an mean AUC comparable to that of the best model (model 9) while being much simplier--model 4 has 600 trees while model 9 has 1200--we choose to select the more parsimonious model as our best baseline gbm model. 
+Due to the presence imbalanced data, we choose to focus out attention on highest mean AUC rather than lowest mean error. However, we notice that the second best model (model 4) has an mean AUC comparable to that of the best model (model 9) while being much simpler--model 4 has 600 trees while model 9 has 1200--we choose to select the more parsimonious model as our best baseline gbm model. 
 
 ```{r best_model_gbm}
 gbm_cv_results[order(gbm_cv_results$mean_AUC, decreasing = TRUE), ][2, ]
@@ -890,9 +890,9 @@ source("../lib/cross_validation_RF.R")
 
 Here we cross-validate parameter ntrees and mtry (actually we use only one value for mtry)
 
-+ ntree: for random forest, the ntree parameter is usually set to be the 10% of the sample size. Since our sample has a size around 6000, we choose ntree to be 100,300,500,800, and 1000.
++ ntree: for random forest, the ntree parameter is usually set to be the 10% of the sample size. Since our sample has a size around 6000, we choose ntree to be 100, 300, 500, 800, and 1000.
 
-+ mtry: this parameter is more expreience-related, so we set its value to be the default 500.
++ mtry: this parameter is more experience-related, so we set its value to be the default 500.
 
 ```{r runcv_rf}
 source("../lib/cross_validation_RF.R")

@@ -39,8 +39,18 @@ Considering that the featured training set is highly-unbalanced, we try random f
 
 # Results
 
-![Figure1](../figs/comparison_time.png)
-![Figure2](../figs/comparison_accu_auc.png)
+![comparison of training and testing time of 5 models](../figs/comparison_time.png)
+
+![comparison of accuracy and AUC of 5 models](../figs/comparison_accu_auc.png)
+
+```{r, echo=FALSE}
+#read direct from the plots stored in the fig folder before training the data
+
+```
+
+
+
+
 
 
 # Analysis
@@ -1251,12 +1261,12 @@ results = data.frame(model=model,accu=accu,auc=auc,tm_train=tm_train,tm_test=tm_
 p1 = ggplot(data=results,aes(x = as.factor(model), y = tm_train))+
   geom_bar(stat="identity")+
   theme_minimal()+
-  labs(title="Training time of All 5 Models",x="models",y="training time")
+  labs(title="Training time of All 5 Models",x="models",y="training time (s)")
 
 p2 = ggplot(data=results,aes(x = as.factor(model), y = tm_test))+
   geom_bar(stat="identity")+
   theme_minimal()+
-  labs(title="Testing time of All 5 Models",x="models",y="testing time")
+  labs(title="Testing time of All 5 Models",x="models",y="testing time (s)")
 
 grid.arrange(p1, p2,ncol=2)
 ```

@@ -23,6 +23,8 @@ fit_train_svm.RData
 	Our svm train model on the entire training set (2400 observations) after cross-validation; ; this is not included in Github due to the size, please turn on the associated controls to obtain the file. 
 fit_train_xgboost.RData
 	Our xgboost train model on the entire training set (2400 observations) after cross-validation
+label_prediction.csv
+	The output file for the test_day_output _edit.R script from the doc folder. These are the predictions of 1s and 0s on the test data provided on 11/04/2020 using the baseline (gbm) and proposed (xgboost) models. 
 res_cv_gbm.RData
 	Results for cross-validation for gbm model
 res_cv_RF.RData

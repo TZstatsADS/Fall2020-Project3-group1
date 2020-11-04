@@ -9,3 +9,7 @@ main_edited.Rmd and main_edited.pdf
 
 Project3-Group1-presentation.pdf
 	- presentation slide deck
+
+test_day_output_edit.R 
+	- This file uses the trained baseline (gbm) and proposed (xgboost) models to create predictions. This file does not run without the fit_train_gbm.RData, which is too big to be pushed onto Github. To run, the main_edit.Rmd file must be run first with the proper controls. This outputs the label_prediction.csv in the output folder.  
+

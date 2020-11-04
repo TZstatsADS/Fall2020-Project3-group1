@@ -109,4 +109,4 @@ Advanced <- label_pred_xgboost
 
 label_predicted <- cbind(Index, Baseline, Advanced)
 
-# write.csv(label_prediction,'../output/label_prediction.csv', row.names = FALSE) ############################ uncomment when creating and saving a .csv file
+write.csv(label_predicted,'../output/label_prediction.csv', row.names = FALSE) ############################ uncomment when creating and saving a .csv file
